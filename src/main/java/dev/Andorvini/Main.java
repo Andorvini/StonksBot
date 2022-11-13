@@ -3,8 +3,7 @@ package dev.Andorvini;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
-import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+import com.pengrad.telegrambot.model.request.*;
 import com.pengrad.telegrambot.request.SendMessage;
 
 import java.io.FileInputStream;
@@ -60,11 +59,31 @@ public class Main {
 
         //Inline Keyboards
         InlineKeyboardMarkup continueKeyboard = new InlineKeyboardMarkup(
-                new InlineKeyboardButton("Продолжить").callbackData("continue")
+                new InlineKeyboardButton("⏩Продолжить⏩").callbackData("continue")
         );
 
         InlineKeyboardMarkup continueKeyboard2 = new InlineKeyboardMarkup(
-                new InlineKeyboardButton("Продолжить").callbackData("continue2")
+                new InlineKeyboardButton("⏩Продолжить⏩").callbackData("continue2")
+        );
+
+        InlineKeyboardMarkup continueKeyboard3 = new InlineKeyboardMarkup(
+                new InlineKeyboardButton("⏩Продолжить⏩").callbackData("continue3")
+        );
+
+        InlineKeyboardMarkup startKeyboard = new InlineKeyboardMarkup(
+                new InlineKeyboardButton("✅Начать✅").callbackData("start")
+        );
+
+        // Basic Keyboards
+        Keyboard mainMenu = new ReplyKeyboardMarkup(
+                new KeyboardButton[]{
+                        new KeyboardButton("\uD83C\uDFE6Банк\uD83C\uDFE6"),
+                        new KeyboardButton("\uD83D\uDCB2Баланс\uD83D\uDCB2")
+                },
+                new KeyboardButton[]{
+                        new KeyboardButton(""),
+                        new KeyboardButton("")
+                }
         );
 
         // Bot Update Listener
@@ -87,7 +106,10 @@ public class Main {
                     ResultSet resultSet = statement.executeQuery("SELECT * FROM stonksBot WHERE chatid = " + chatId + ";");
 
                     if (resultSet.getInt("chatID") == 0) {
-                        statement.executeUpdate("INSERT INTO stonksBot(chatId,tutorialCompleted) VALUES ('" + chatId + "','false');");
+                        statement.executeUpdate("INSERT INTO stonksBot(chatId,tutorialCompleted,money) VALUES ('" + chatId + "','false','1000');");
+                        statement.closeOnCompletion();
+                    } else {
+                        statement.close();
                     }
 
                 } catch (Exception e) {
@@ -116,7 +138,21 @@ public class Main {
 
                     if (update.callbackQuery().data().equals("continue2")) {
                         bot.execute(new SendMessage(chatId, "Данная цель будет достигаться самыми различными способами,от банального подкупа политиков и топ-менеджеров до их <s>УНИЧТОЖЕНИЯ</s> обезвреживания")
+                                .replyMarkup(continueKeyboard3)
                                 .parseMode(HTML));
+                    }
+
+                    if (update.callbackQuery().data().equals("continue3")) {
+                        bot.execute(new SendMessage(chatId, "\uD83C\uDF89Поздравляем с прохожденем вступительной части!\uD83C\uDF89" +
+                                "\nПриступайте к выполнению своей священной цели")
+                                .replyMarkup(startKeyboard));
+                        try {
+                            Statement statement = finalConnection.createStatement();
+
+                            statement.executeUpdate("UPDATE stonksBot SET tutorialCompleted = 'true' WHERE chatId = " + chatId +";");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
 
                 }
